@@ -61,9 +61,9 @@ export class TaskTask extends BaseTask {
     })
 
     const dg = await this.garden.getConfigGraph(this.log)
-    const deps = await dg.getDependencies("task", this.getName(), false)
+    const deps = await dg.getDependencies("run", this.getName(), false)
 
-    const deployTasks = deps.service.map((service) => {
+    const deployTasks = deps.deploy.map((service) => {
       return new DeployTask({
         service,
         log: this.log,
@@ -74,7 +74,7 @@ export class TaskTask extends BaseTask {
       })
     })
 
-    const taskTasks = await Bluebird.map(deps.task, (task) => {
+    const taskTasks = await Bluebird.map(deps.run, (task) => {
       return TaskTask.factory({
         task,
         log: this.log,
@@ -129,7 +129,7 @@ export class TaskTask extends BaseTask {
       status: "active",
     })
 
-    const dependencies = await this.graph.getDependencies("task", this.getName(), false)
+    const dependencies = await this.graph.getDependencies("run", this.getName(), false)
 
     const serviceStatuses = getServiceStatuses(dependencyResults)
     const taskResults = getRunTaskResults(dependencyResults)

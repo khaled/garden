@@ -82,7 +82,7 @@ export class TestTask extends BaseTask {
       force: this.forceBuild,
     })
 
-    const taskTasks = await Bluebird.map(deps.task, (task) => {
+    const taskTasks = await Bluebird.map(deps.run, (task) => {
       return TaskTask.factory({
         task,
         garden: this.garden,
@@ -93,7 +93,7 @@ export class TestTask extends BaseTask {
       })
     })
 
-    const serviceTasks = deps.service.map(
+    const serviceTasks = deps.deploy.map(
       (service) =>
         new DeployTask({
           garden: this.garden,

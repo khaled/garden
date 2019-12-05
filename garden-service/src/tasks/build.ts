@@ -130,7 +130,7 @@ export class BuildTask extends BaseTask {
  * Use this method to get the build tasks for a module. This is needed to be able to avoid an unnecessary build step
  * when there is no build handler and no dependency files to copy.
  */
-export async function getBuildTasks(params: BuildTaskParams): Promise<(BuildTask | StageBuildTask)[]> {
+export async function getBuildTasks(params: BuildTaskParams): Promise<BaseTask[]> {
   // We need to see if a build step is necessary for the module. If it is, return a build task for the module.
   // Otherwise, return a build task for each of the module's dependencies.
   // We do this to avoid displaying no-op build steps in the stack graph.
