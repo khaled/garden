@@ -6,21 +6,16 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-import { ServiceStatus, ServiceState } from "../../../types/service"
+import { ServiceStatus, ServiceState, ForwardablePort } from "../../../types/service"
 import { GetServiceStatusParams } from "../../../types/plugin/service/getServiceStatus"
-import { compareDeployedResources } from "../status/status"
-import { KubeApi } from "../api"
-import { getAppNamespace } from "../namespace"
 import { LogEntry } from "../../../logger/log-entry"
 import { helm } from "./helm-cli"
 import { HelmModule } from "./config"
-import { getChartResources, findServiceResource, getReleaseName } from "./common"
-import { buildHelmModule } from "./build"
-import { configureHotReload } from "../hot-reload"
-import { getHotReloadSpec } from "./hot-reload"
+import { getReleaseName } from "./common"
 import { KubernetesPluginContext } from "../config"
 import { getForwardablePorts } from "../port-forward"
 import { KubernetesServerResource } from "../types"
+import { safeLoadAll } from "js-yaml"
 
 const helmStatusCodeMap: { [code: number]: ServiceState } = {
   // see https://github.com/kubernetes/helm/blob/master/_proto/hapi/release/status.proto
@@ -44,52 +39,34 @@ export type HelmServiceStatus = ServiceStatus<HelmStatusDetail>
 export async function getServiceStatus({
   ctx,
   module,
-  service,
   log,
   hotReload,
 }: GetServiceStatusParams<HelmModule>): Promise<HelmServiceStatus> {
   const k8sCtx = <KubernetesPluginContext>ctx
-  // need to build to be able to check the status
-  await buildHelmModule({ ctx: k8sCtx, module, log })
-
-  // first check if the installed objects on the cluster match the current code
-  const chartResources = await getChartResources(k8sCtx, module, log)
-  const provider = k8sCtx.provider
-  const namespace = await getAppNamespace(k8sCtx, log, provider)
   const releaseName = getReleaseName(module)
 
   const detail: HelmStatusDetail = {}
   let state: ServiceState
 
-  if (hotReload) {
-    // If we're running with hot reload enabled, we need to alter the appropriate resources and then compare directly.
-    const target = await findServiceResource({ ctx: k8sCtx, log, chartResources, module })
-    const hotReloadSpec = getHotReloadSpec(service)
-    const resourceSpec = module.spec.serviceResource!
-
-    configureHotReload({
-      target,
-      hotReloadSpec,
-      hotReloadArgs: resourceSpec.hotReloadArgs,
-      containerName: resourceSpec.containerName,
-    })
-
-    const api = await KubeApi.factory(log, provider)
-
-    const comparison = await compareDeployedResources(k8sCtx, api, namespace, chartResources, log)
-    state = comparison.state
-    detail.remoteResources = comparison.remoteResources
-  } else {
-    // Otherwise we trust Helm to report the status of the chart.
-    try {
-      const helmStatus = await getReleaseStatus(k8sCtx, module, releaseName, log)
-      state = helmStatus.state
-    } catch (err) {
-      state = "missing"
-    }
+  try {
+    const helmStatus = await getReleaseStatus(k8sCtx, module, releaseName, log, hotReload)
+    state = helmStatus.state
+  } catch (err) {
+    state = "missing"
   }
 
-  const forwardablePorts = getForwardablePorts(chartResources)
+  let forwardablePorts: ForwardablePort[] = []
+
+  if (state !== "missing") {
+    const deployedResources = safeLoadAll(
+      await helm({
+        ctx: k8sCtx,
+        log,
+        args: ["get", "manifest", releaseName],
+      })
+    )
+    forwardablePorts = getForwardablePorts(deployedResources)
+  }
 
   return {
     forwardablePorts,
@@ -103,7 +80,8 @@ export async function getReleaseStatus(
   ctx: KubernetesPluginContext,
   module: HelmModule,
   releaseName: string,
-  log: LogEntry
+  log: LogEntry,
+  hotReload: boolean
 ): Promise<ServiceStatus> {
   try {
     log.silly(`Getting the release status for ${releaseName}`)
@@ -121,8 +99,9 @@ export async function getReleaseStatus(
         })
       )
       const deployedVersion = deployedValues[".garden"] && deployedValues[".garden"].version
+      const hotReloadEnabled = deployedValues[".garden"] && deployedValues[".garden"].hotReload === true
 
-      if (!deployedVersion || deployedVersion !== module.version.versionString) {
+      if ((hotReload && !hotReloadEnabled) || !deployedVersion || deployedVersion !== module.version.versionString) {
         state = "outdated"
       }
     }
