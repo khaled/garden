@@ -47,7 +47,7 @@ echo "-> Preparing packages..."
 cd dist
 
 echo "  -> linux-amd64"
-pkg --target node10-linux-x64 ../tmp/dist
+pkg --target node12-linux-x64 ../tmp/dist
 rm -rf linux-amd64
 mkdir linux-amd64
 mv garden-service linux-amd64/garden
@@ -56,7 +56,7 @@ echo "    -> tar"
 tar -czf garden-${version}-linux-amd64.tar.gz linux-amd64
 
 echo "  -> alpine-amd64"
-pkg --target node10-alpine-x64 ../tmp/dist
+pkg --target node12-alpine-x64 ../tmp/dist
 rm -rf alpine-amd64
 mkdir alpine-amd64
 mv garden-service alpine-amd64/garden
@@ -65,7 +65,7 @@ echo "    -> tar"
 tar -czf garden-${version}-alpine-amd64.tar.gz alpine-amd64
 
 echo "  -> windows-amd64"
-pkg --target node10-win-x64 ../tmp/dist
+pkg --target node12-win-x64 ../tmp/dist
 rm -rf windows-amd64
 mkdir windows-amd64
 # Name should match go release and other standards using full "windows" name
@@ -77,16 +77,7 @@ zip -q -r garden-${version}-windows-amd64.zip windows-amd64
 echo "  -> macos-amd64"
 rm -rf macos-amd64
 mkdir macos-amd64
-
-# Need to use a newer version of Pkg for the fsevents module to work properly,
-# which unfortunately does NOT work for other platforms :/
-echo "    -> install pkg@4.4.0"
-npm init -y
-npm install pkg@4.4.0
-
-echo "    -> build binary"
-node_modules/.bin/pkg --target node10-macos-x64 ../tmp/dist
-
+pkg --target node12-macos-x64 ../tmp/dist
 mv garden-service macos-amd64/garden
 cp -r ../tmp/dist/static macos-amd64
 
@@ -95,8 +86,3 @@ cp ../lib/fsevents/node-v64-darwin-x64/fsevents.node macos-amd64/fsevents.node
 
 echo "    -> tar"
 tar -czf garden-${version}-macos-amd64.tar.gz macos-amd64
-
-echo "-> removing node_modules and package files..."
-rm -rf node_modules
-rm package.json
-rm package-lock.json

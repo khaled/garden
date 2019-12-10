@@ -1,16 +1,16 @@
-FROM node:12.13.1-alpine
+FROM node:12.13.1-buster
 
 # system dependencies
-RUN apk add --no-cache \
+RUN set -ex; \
+  apt-get update; \
+  apt-get install -y --no-install-recommends \
   bash \
-  curl \
-  docker-cli \
+  docker \
   git \
+  gzip \
   openssl \
-  rsync \
-  ca-certificates \
-  tar \
-  gzip
+  rsync; \
+  rm -rf /var/lib/apt/lists/*
 
 ADD . /garden
 
