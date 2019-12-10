@@ -575,7 +575,7 @@ export class Garden {
     const providers = await this.resolveProviders()
     const configs = await this.getRawModuleConfigs(keys)
 
-    keys ? this.log.silly(`Resolving module configs ${keys.join(", ")}`) : this.log.silly(`Resolving module configs`)
+    keys ? log.silly(`Resolving module configs ${keys.join(", ")}`) : this.log.silly(`Resolving module configs`)
 
     if (!opts.configContext) {
       opts.configContext = await this.getModuleConfigContext()
