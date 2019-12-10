@@ -16,7 +16,7 @@ import { LogEntry } from "../logger/log-entry"
 import { prepareRuntimeContext } from "../runtime-context"
 import { ConfigGraph } from "../config-graph"
 import { ModuleVersion } from "../vcs/vcs"
-import { getBuildTasks } from "./build"
+import { BuildTask } from "./build"
 import { RunTaskResult } from "../types/plugin/task/runTask"
 import { TaskResults } from "../task-graph"
 import { GetTaskResultTask } from "./get-task-result"
@@ -53,7 +53,7 @@ export class TaskTask extends BaseTask {
   }
 
   async getDependencies(): Promise<BaseTask[]> {
-    const buildTasks = await getBuildTasks({
+    const buildTasks = await BuildTask.factory({
       garden: this.garden,
       log: this.log,
       module: this.task.module,

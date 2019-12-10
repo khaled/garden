@@ -21,7 +21,7 @@ import { processModules } from "../process"
 import { printHeader } from "../logger/util"
 import { startServer, GardenServer } from "../server/server"
 import { flatten } from "lodash"
-import { getBuildTasks } from "../tasks/build"
+import { BuildTask } from "../tasks/build"
 
 const buildArguments = {
   modules: new StringsParameter({
@@ -93,13 +93,13 @@ export class BuildCommand extends Command<Args, Opts> {
       footerLog,
       modules,
       watch: opts.watch,
-      handler: async (_, module) => getBuildTasks({ garden, log, module, force: opts.force }),
+      handler: async (_, module) => BuildTask.factory({ garden, log, module, force: opts.force }),
       changeHandler: async (newGraph, module) => {
         const deps = await newGraph.getDependants("build", module.name, true)
         const tasks = [module]
           .concat(deps.build)
           .filter((m) => moduleNames.includes(m.name))
-          .map((m) => getBuildTasks({ garden, log, module: m, force: true }))
+          .map((m) => BuildTask.factory({ garden, log, module: m, force: true }))
         return flatten(await Promise.all(tasks))
       },
     })

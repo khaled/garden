@@ -15,7 +15,7 @@ import { Service } from "../types/service"
 import { DependencyGraphNode, ConfigGraph } from "../config-graph"
 import { LogEntry } from "../logger/log-entry"
 import { BaseTask } from "./base"
-import { getBuildTasks } from "./build"
+import { BuildTask } from "./build"
 
 export async function getDependantTasksForModule({
   garden,
@@ -44,7 +44,7 @@ export async function getDependantTasksForModule({
 
   if (!includeDependants) {
     buildTasks.push(
-      ...(await getBuildTasks({
+      ...(await BuildTask.factory({
         garden,
         log,
         module,
@@ -70,7 +70,7 @@ export async function getDependantTasksForModule({
       const dependants = await graph.getDependantsForModule(module, dependantFilterFn)
 
       buildTasks.push(
-        ...(await getBuildTasks({
+        ...(await BuildTask.factory({
           garden,
           log,
           module,
@@ -86,7 +86,7 @@ export async function getDependantTasksForModule({
 
   const dependantBuildTasks = flatten(
     await Bluebird.map(dependantBuildModules, (m) =>
-      getBuildTasks({
+      BuildTask.factory({
         garden,
         log,
         module: m,
