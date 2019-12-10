@@ -641,13 +641,13 @@ export class Garden {
 
         for (const moduleConfig of moduleConfigs) {
           for (const serviceConfig of moduleConfig.serviceConfigs) {
-            if (serviceConfig.name == dependency.by) {
+            if (serviceConfig.name === dependency.by) {
               serviceConfig.dependencies.push(dependency.on)
               found = true
             }
           }
           for (const taskConfig of moduleConfig.taskConfigs) {
-            if (taskConfig.name == dependency.by) {
+            if (taskConfig.name === dependency.by) {
               taskConfig.dependencies.push(dependency.on)
               found = true
             }
