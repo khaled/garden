@@ -182,7 +182,7 @@ export class ActionRouter implements TypeGuard {
 
     const handlerParams: PluginActionParams["configureProvider"] = {
       ...omit(params, ["pluginName"]),
-      base: this.wrapBase(handler.base),
+      base: this.wrapBase(handler!.base),
     }
 
     const result = (<Function>handler)(handlerParams)
@@ -694,7 +694,7 @@ export class ActionRouter implements TypeGuard {
     })
 
     const handlerParams: PluginActionParams[T] = {
-      ...(await this.commonParams(handler, params.log)),
+      ...(await this.commonParams(handler!, params.log)),
       ...(<any>params),
     }
 
@@ -991,11 +991,13 @@ export class ActionRouter implements TypeGuard {
     actionType,
     pluginName,
     defaultHandler,
+    throwIfMissing = true,
   }: {
     actionType: T
     pluginName: string
     defaultHandler?: PluginActionHandlers[T]
-  }): Promise<WrappedPluginActionHandlers[T]> {
+    throwIfMissing?: boolean
+  }): Promise<WrappedPluginActionHandlers[T] | null> {
     const handlers = Object.values(await this.getActionHandlers(actionType, pluginName))
 
     // Since we only allow retrieving by plugin name, the length is always either 0 or 1
@@ -1009,6 +1011,10 @@ export class ActionRouter implements TypeGuard {
         <WrappedPluginActionHandlers[T]>defaultHandler,
         { actionType, pluginName: defaultProvider.name }
       )
+    }
+
+    if (!throwIfMissing) {
+      return null
     }
 
     const errorDetails = {

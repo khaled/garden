@@ -684,8 +684,8 @@ describe("ActionRouter", () => {
       const pluginName = "test-plugin-b"
       const handler = await actionsA["getActionHandler"]({ actionType: "prepareEnvironment", pluginName })
 
-      expect(handler.actionType).to.equal("prepareEnvironment")
-      expect(handler.pluginName).to.equal(pluginName)
+      expect(handler!.actionType).to.equal("prepareEnvironment")
+      expect(handler!.pluginName).to.equal(pluginName)
     })
 
     it("should throw if no handler is available", async () => {

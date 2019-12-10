@@ -591,9 +591,13 @@ export class Garden {
     // Walk through all plugins in dependency order, and allow them to augment the graph
     for (const provider of getDependencyOrder(providers, this.registeredPlugins)) {
       // Skip the routine if the provider doesn't have the handler
-      try {
-        await actions.getActionHandler({ actionType: "augmentGraph", pluginName: provider.name })
-      } catch {
+      const handler = await actions.getActionHandler({
+        actionType: "augmentGraph",
+        pluginName: provider.name,
+        throwIfMissing: false,
+      })
+
+      if (!handler) {
         continue
       }
 
