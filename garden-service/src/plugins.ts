@@ -76,7 +76,7 @@ export function loadPlugins(log: LogEntry, registeredPlugins: PluginMap, configs
     return plugin
   }
 
-  // Load plugins in dependency order (concat() makes sure we're not mutating the original array, because JS...)
+  // Load plugins in dependency order
   const orderedConfigs = getDependencyOrder(configs, registeredPlugins)
 
   for (const config of orderedConfigs) {
@@ -131,6 +131,7 @@ export function getDependencyOrder<T extends ProviderConfig>(configs: T[], regis
     }
   }
 
+  // Note: concat() makes sure we're not mutating the original array, because JS...
   return configs.concat().sort((a, b) => {
     return ordered.indexOf(a.name) - ordered.indexOf(b.name)
   })
