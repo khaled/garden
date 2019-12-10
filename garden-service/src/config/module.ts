@@ -74,7 +74,7 @@ export interface BaseBuildSpec {
 
 export interface ModuleSpec {}
 
-export interface AddModule {
+export interface AddModuleSpec {
   apiVersion?: string
   name: string
   path: string
@@ -87,7 +87,7 @@ export interface AddModule {
   repositoryUrl?: string
 }
 
-export interface BaseModuleSpec extends AddModule {
+export interface BaseModuleSpec extends AddModuleSpec {
   apiVersion: string
   allowPublish: boolean
   build: BaseBuildSpec

@@ -9,7 +9,7 @@
 import { PluginActionParamsBase, actionParamsSchema } from "../base"
 import { dedent } from "../../../util/string"
 import { joi, joiArray, joiIdentifier } from "../../../config/common"
-import { baseModuleSpecSchema, AddModule, modulePathSchema } from "../../../config/module"
+import { baseModuleSpecSchema, AddModuleSpec, modulePathSchema } from "../../../config/module"
 import { Provider, providerSchema } from "../../../config/provider"
 import { moduleSchema, Module } from "../../module"
 
@@ -26,7 +26,7 @@ interface AddDependency {
 export interface AugmentGraphResult {
   addBuildDependencies?: AddDependency[]
   addRuntimeDependencies?: AddDependency[]
-  addModules?: AddModule[]
+  addModules?: AddModuleSpec[]
 }
 
 const addModuleSchema = baseModuleSpecSchema.keys({
